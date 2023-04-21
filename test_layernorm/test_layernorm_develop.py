@@ -218,7 +218,8 @@ class TestLayerNormDevelopCase1_FP32(unittest.TestCase):
             self.out_torch,
             self.atol,
             self.rtol,
-            msg=('Develop: compare layer_norm eager forward res with torch failed in %s dtype',
+            msg=(
+            'Develop: compare layer_norm eager forward res with torch failed in %s dtype'
             'max_atol_idx: %d, eager_value: %d, torch_value: %d, \n'
             'max_rtol_idx: %d, eager_value: %d, torch_value: %d, \n'                
             ),
@@ -227,7 +228,7 @@ class TestLayerNormDevelopCase1_FP32(unittest.TestCase):
             out_grads_eager_np,
             self.out_grads_torch,self.atol,
             self.rtol,
-            err_str=('Develop: compare layer_norm eager grad res with torch failed in %s dtype',
+            err_str=('Develop: compare layer_norm eager grad res with torch failed in %s dtype'
             'max_atol_idx: %d, eager_value: %d, torch_value: %d, \n'
             'max_rtol_idx: %d, eager_value: %d, torch_value: %d, \n'                
             ),
@@ -333,7 +334,7 @@ class TestLayerNormDevelopCase1_FP32(unittest.TestCase):
             self.atol,
             self.rtol,
             msg=(
-            'Develop: compare layer_norm static forward res with torch failed in %s dtype',
+            'Develop: compare layer_norm static forward res with torch failed in %s dtype'
             'max_atol_idx: %d, eager_value: %d, torch_value: %d, \n'
             'max_rtol_idx: %d, eager_value: %d, torch_value: %d, \n'                
             ),
@@ -343,7 +344,8 @@ class TestLayerNormDevelopCase1_FP32(unittest.TestCase):
             self.out_grads_torch,
             self.atol,
             self.rtol,
-            err_str=('Develop: compare layer_norm static grad res with torch failed in %s dtype',
+            err_str=(
+            'Develop: compare layer_norm static grad res with torch failed in %s dtype'
             'max_atol_idx: %d, eager_value: %d, torch_value: %d, \n'
             'max_rtol_idx: %d, eager_value: %d, torch_value: %d, \n'                
             ),
@@ -456,14 +458,19 @@ class TestLayerNormDevelopCase1_FP32(unittest.TestCase):
                 test_equl(
                 out_static,
                 out_static_baseline,
-                msg='Develop: paddle.nn.functional.layer_norm static forward is unstable in %s dtype'
-                ,
-                dtype = self.dtype)
+                msg=('Develop: paddle.nn.functional.layer_norm static forward is unstable in %s dtype'
+                'max_atol_idx: %d, eager_value: %d, torch_value: %d, \n'
+                'max_rtol_idx: %d, eager_value: %d, torch_value: %d, \n'
+                )
+                ,dtype = self.dtype)
                 test_equls(
                 out_grads_static,
                 out_grads_static_baseline,
-                err_str = 'Develop: paddle.nn.functional.layer_norm static grad is unstable in %s dtype',
-                dtype = self.dtype)
+                err_str = ('Develop: paddle.nn.functional.layer_norm static grad is unstable in %s dtype'
+                'max_atol_idx: %d, eager_value: %d, torch_value: %d, \n'
+                'max_rtol_idx: %d, eager_value: %d, torch_value: %d, \n'
+                )
+                ,dtype = self.dtype)
 
 
 class TestLayerNormDevelopCase1_FP16(TestLayerNormDevelopCase1_FP32):
