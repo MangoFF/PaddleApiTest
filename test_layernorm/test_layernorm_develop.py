@@ -6,7 +6,7 @@ from paddle.utils import map_structure
 import sys
 sys.path.append("..")
 from utils import TOLERANCE, convert_dtype_to_torch_type
-
+from test_fuc import test_equl,test_equls
  
 def generate_np_inputs_and_dout():    
     x_case1 = np.random.random(size=[1, 12288]).astype("float32") - 0.5
@@ -192,27 +192,47 @@ class TestLayerNormDevelopCase1_FP32(unittest.TestCase):
         np.savez(self.save_eager_res_path, out_eager=out_eager_np, out_grads_eager_0=out_grads_eager_np[0], out_grads_eager_1=out_grads_eager_np[1], out_grads_eager_2=out_grads_eager_np[2])
         
         # compare eager res with torch
-        np.testing.assert_allclose(
+        # np.testing.assert_allclose(
+        #     out_eager_np,
+        #     self.out_torch,
+        #     self.atol,
+        #     self.rtol,
+        #     err_msg=(
+        #         'Develop: compare layer_norm eager forward res with torch failed in %s dtype'
+        #     )
+        #     % self.dtype,
+        # )
+        # for idx in range(len(out_grads_eager_np)):
+        #     np.testing.assert_allclose(
+        #         out_grads_eager_np[idx],
+        #         self.out_grads_torch[idx],
+        #         self.atol,
+        #         self.rtol,
+        #         err_msg=(
+        #             'Develop: compare layer_norm eager grad res with torch failed in %s dtype'
+        #         )
+        #         % self.dtype,
+        #     )
+        test_equl(
             out_eager_np,
             self.out_torch,
             self.atol,
             self.rtol,
-            err_msg=(
-                'Develop: compare layer_norm eager forward res with torch failed in %s dtype'
-            )
-            % self.dtype,
-        )
-        for idx in range(len(out_grads_eager_np)):
-            np.testing.assert_allclose(
-                out_grads_eager_np[idx],
-                self.out_grads_torch[idx],
-                self.atol,
-                self.rtol,
-                err_msg=(
-                    'Develop: compare layer_norm eager grad res with torch failed in %s dtype'
-                )
-                % self.dtype,
-            )
+            msg=('Develop: compare layer_norm eager forward res with torch failed in %s dtype',
+            'max_atol_idx: %d, eager_value: %d, torch_value: %d, \n'
+            'max_rtol_idx: %d, eager_value: %d, torch_value: %d, \n'                
+            ),
+            dtype= self.dtype)
+        test_equls(
+            out_grads_eager_np,
+            self.out_grads_torch,self.atol,
+            self.rtol,
+            err_str=('Develop: compare layer_norm eager grad res with torch failed in %s dtype',
+            'max_atol_idx: %d, eager_value: %d, torch_value: %d, \n'
+            'max_rtol_idx: %d, eager_value: %d, torch_value: %d, \n'                
+            ),
+            dtype= self.dtype)
+
             
     def gen_static_inputs_and_dout(self):
         x_static = paddle.static.data(
@@ -286,27 +306,49 @@ class TestLayerNormDevelopCase1_FP32(unittest.TestCase):
         np.savez(self.save_static_res_path, out_static=out_static, out_grads_static_0=out_grads_static[0], out_grads_static_1=out_grads_static[1], out_grads_static_2=out_grads_static[2])
         
         # compare static res with torch
-        np.testing.assert_allclose(
+        # np.testing.assert_allclose(
+        #     out_static,
+        #     self.out_torch,
+        #     self.atol,
+        #     self.rtol,
+        #     err_msg=(
+        #         'Develop: compare layer_norm static forward res with torch failed in %s dtype'
+        #     )
+        #     % self.dtype,
+        # )
+        # for idx in range(len(out_grads_static)):
+        #     np.testing.assert_allclose(
+        #         out_grads_static[idx],
+        #         self.out_grads_torch[idx],
+        #         self.atol,
+        #         self.rtol,
+        #         err_msg=(
+        #             'Develop: compare layer_norm static grad res with torch failed in %s dtype'
+        #         )
+        #         % self.dtype,
+        #     )
+        test_equl(
             out_static,
             self.out_torch,
             self.atol,
             self.rtol,
-            err_msg=(
-                'Develop: compare layer_norm static forward res with torch failed in %s dtype'
-            )
-            % self.dtype,
-        )
-        for idx in range(len(out_grads_static)):
-            np.testing.assert_allclose(
-                out_grads_static[idx],
-                self.out_grads_torch[idx],
-                self.atol,
-                self.rtol,
-                err_msg=(
-                    'Develop: compare layer_norm static grad res with torch failed in %s dtype'
-                )
-                % self.dtype,
-            )
+            msg=(
+            'Develop: compare layer_norm static forward res with torch failed in %s dtype',
+            'max_atol_idx: %d, eager_value: %d, torch_value: %d, \n'
+            'max_rtol_idx: %d, eager_value: %d, torch_value: %d, \n'                
+            ),
+            dtype=self.dtype)
+        test_equls(
+            out_grads_static,
+            self.out_grads_torch,
+            self.atol,
+            self.rtol,
+            err_str=('Develop: compare layer_norm static grad res with torch failed in %s dtype',
+            'max_atol_idx: %d, eager_value: %d, torch_value: %d, \n'
+            'max_rtol_idx: %d, eager_value: %d, torch_value: %d, \n'                
+            ),
+            dtype=self.dtype)
+
             
     def test_eager_stability(self):        
         x_eager, weight_eager, bias_eager, dout_eager = self.gen_eager_inputs_and_dout()
@@ -328,23 +370,42 @@ class TestLayerNormDevelopCase1_FP32(unittest.TestCase):
                                     lambda x: x.numpy(),
                                     out_grads_eager,
                                 )
-            np.testing.assert_equal(
-                out_eager,
-                out_eager_baseline_np,
-                err_msg=(
-                    'Develop: paddle.nn.functional.layer_norm eager forward is unstable in %s dtype'
-                )
-                % self.dtype,
-            )
-            for idx in range(len(out_grads_eager)):
-                np.testing.assert_equal(
-                    out_grads_eager[idx],
-                    out_grads_eager_baseline_np[idx],
-                    err_msg=(
-                        'Develop: paddle.nn.functional.layer_norm eager grad is unstable in %s dtype'
-                    )
-                    % self.dtype,
-                )
+            # np.testing.assert_equal(
+            #     out_eager,
+            #     out_eager_baseline_np,
+            #     err_msg=(
+            #         'Develop: paddle.nn.functional.layer_norm eager forward is unstable in %s dtype'
+            #     )
+            #     % self.dtype,
+            # )
+            # for idx in range(len(out_grads_eager)):
+            #     np.testing.assert_equal(
+            #         out_grads_eager[idx],
+            #         out_grads_eager_baseline_np[idx],
+            #         err_msg=(
+            #             'Develop: paddle.nn.functional.layer_norm eager grad is unstable in %s dtype'
+            #         )
+            #         % self.dtype,
+            #     )
+            test_equl(
+            out_eager,
+            out_eager_baseline_np,
+            msg= (
+                'Develop: paddle.nn.functional.layer_norm eager forward is unstable in %s dtype'
+                'max_atol_idx: %d, eager_value: %d, torch_value: %d, \n'
+                'max_rtol_idx: %d, eager_value: %d, torch_value: %d, \n'                
+                ),
+            dtype = self.dtype)
+            test_equls(
+                out_grads_eager,
+                self.out_grads_eager_baseline_np,
+                err_str=(
+                'Develop: paddle.nn.functional.layer_norm eager grad is unstable in %s dtype'
+                'max_atol_idx: %d, eager_value: %d, torch_value: %d, \n'
+                'max_rtol_idx: %d, eager_value: %d, torch_value: %d, \n'
+                ),
+                dtype = self.dtype)
+
                 
     def test_static_stability(self):
         with paddle.fluid.framework._dygraph_guard(None):
@@ -375,23 +436,35 @@ class TestLayerNormDevelopCase1_FP32(unittest.TestCase):
                     fetch_list=[out_static_pg] + out_grads_static_pg,
                 )
                 out_static, out_grads_static = out[0], out[1:]
-                np.testing.assert_equal(
-                    out_static,
-                    out_static_baseline,
-                    err_msg=(
-                        'Develop: paddle.nn.functional.layer_norm static forward is unstable in %s dtype'
-                    )
-                    % self.dtype,
-                )
-                for idx in range(len(out_grads_static)):
-                    np.testing.assert_equal(
-                        out_grads_static[idx],
-                        out_grads_static_baseline[idx],
-                        err_msg=(
-                            'Develop: paddle.nn.functional.layer_norm static grad is unstable in %s dtype'
-                        )
-                        % self.dtype,
-                    )
+                # np.testing.assert_equal(
+                #     out_static,
+                #     out_static_baseline,
+                #     err_msg=(
+                #         'Develop: paddle.nn.functional.layer_norm static forward is unstable in %s dtype'
+                #     )
+                #     % self.dtype,
+                # )
+                # for idx in range(len(out_grads_static)):
+                #     np.testing.assert_equal(
+                #         out_grads_static[idx],
+                #         out_grads_static_baseline[idx],
+                #         err_msg=(
+                #             'Develop: paddle.nn.functional.layer_norm static grad is unstable in %s dtype'
+                #         )
+                #         % self.dtype,
+                #     )
+                test_equl(
+                out_static,
+                out_static_baseline,
+                msg='Develop: paddle.nn.functional.layer_norm static forward is unstable in %s dtype'
+                ,
+                dtype = self.dtype)
+                test_equls(
+                out_grads_static,
+                out_grads_static_baseline,
+                err_str = 'Develop: paddle.nn.functional.layer_norm static grad is unstable in %s dtype',
+                dtype = self.dtype)
+
 
 class TestLayerNormDevelopCase1_FP16(TestLayerNormDevelopCase1_FP32):
     def init_params(self):
